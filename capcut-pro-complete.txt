@@ -1,0 +1,301 @@
+#!name=CapCut Pro Unlock 2025
+#!desc=Mở khóa tất cả tính năng Pro của CapCut | Xóa watermark | Xuất video chất lượng cao | Hiệu ứng premium
+#!author=DHungx (modified)
+# Update: 25/04/2025
+# Telegram: https://t.me/dhungx
+# Discord: https://discord.gg/juY9tw5AJY
+#!icon=https://is1-ssl.mzstatic.com/image/thumb/Purple116/v4/8c/a2/f2/8ca2f290-0cca-7dad-9799-932ec89a5423/AppIcon-0-0-1x_U007emarketing-0-0-0-7-0-0-sRGB-0-0-0-GLES2_U002c0-512MB-85-220-0-0.png/246x0w.png
+
+[MITM]
+hostname = %APPEND% api*.byteoversea.com, api*.tiktokv.com, api.capcut.com, lf*.bytescm.com, *.capcut.com
+
+[Rule]
+DOMAIN-SUFFIX,ads.capcut.com,REJECT
+DOMAIN-SUFFIX,analytics.capcut.com,REJECT
+DOMAIN-SUFFIX,metrics.capcut.com,REJECT
+
+[URL Rewrite]
+^https:\/\/api\.capcut\.com\/pay\/v\d\/ads _ reject-200
+^https:\/\/api\.capcut\.com\/service\/\d\.\d\/ad\/.* _ reject-200
+^https:\/\/lf\d+-\w+-\w+\.bytescm\.com\/obj\/capcut-ad\/.* _ reject-200
+
+[Script]
+# Delete auth headers
+capcut-delete-header = type=http-request, pattern=^https:\/\/api\.capcut\.com\/(pay|vip|subscription)\/v\d\/, script-path=https://raw.githubusercontent.com/dhungx/modules-shadowrocket/main/js/capcut/deleteHeader.js, timeout=60, script-update-interval=0
+
+# Main Pro unlock script
+capcut-pro = type=http-response, pattern=^https:\/\/api\.capcut\.com\/pay\/v\d\/user_info, requires-body=true, max-size=-1, script-path=https://raw.githubusercontent.com/dhungx/modules-shadowrocket/main/js/capcut/capcut-pro.js, script-update-interval=0
+
+# Subscription status script
+capcut-subscription = type=http-response, pattern=^https:\/\/api\.capcut\.com\/(subscription|vip)\/v\d\/status, requires-body=true, max-size=-1, script-path=https://raw.githubusercontent.com/dhungx/modules-shadowrocket/main/js/capcut/capcut-subscription.js, script-update-interval=0
+
+# Premium resources unlock
+capcut-resource = type=http-response, pattern=^https:\/\/api\.capcut\.com\/resource\/v\d\/(font|sticker|template|effect), requires-body=true, max-size=-1, script-path=https://raw.githubusercontent.com/dhungx/modules-shadowrocket/main/js/capcut/capcut-resource.js, script-update-interval=0
+
+# Export quality unlock
+capcut-export = type=http-response, pattern=^https:\/\/api\.capcut\.com\/export\/v\d\/\w+, requires-body=true, max-size=-1, script-path=https://raw.githubusercontent.com/dhungx/modules-shadowrocket/main/js/capcut/capcut-export.js, script-update-interval=0
+
+[Script-Settings]
+# deleteHeader.js
+function dhungx_deleteHeader() {
+  if ($request.headers) {
+    delete $request.headers["X-SS-QUERIES"];
+    delete $request.headers["x-tt-token"];
+    delete $request.headers["X-Khronos"];
+    delete $request.headers["X-Gorgon"];
+    delete $request.headers["X-Ladon"];
+    delete $request.headers["X-Argus"];
+    delete $request.headers["X-Tyhon"];
+  }
+  $done({headers: $request.headers});
+}
+dhungx_deleteHeader();
+
+# capcut-pro.js
+function dhungx_capcutPro() {
+  var body = $response.body;
+  var obj = JSON.parse(body);
+
+  if (obj.data) {
+    // Mark user as Premium
+    obj.data.is_vip = true;
+    obj.data.status = "subscribed";
+    obj.data.permission = "premium";
+    obj.data.expire_time = 4102415999; // 31/12/2099
+    
+    // Add VIP privileges
+    if (!obj.data.vip_privileges) {
+      obj.data.vip_privileges = [];
+    }
+    
+    // List of all premium features
+    const premiumFeatures = [
+      {
+        "feature_id": "export_no_watermark",
+        "feature_name": "Xuất video không watermark",
+        "status": "active"
+      },
+      {
+        "feature_id": "high_quality_export",
+        "feature_name": "Xuất video chất lượng cao",
+        "status": "active"
+      },
+      {
+        "feature_id": "premium_templates",
+        "feature_name": "Mẫu thiết kế premium",
+        "status": "active"
+      },
+      {
+        "feature_id": "premium_effects",
+        "feature_name": "Hiệu ứng premium",
+        "status": "active"
+      },
+      {
+        "feature_id": "premium_filters",
+        "feature_name": "Bộ lọc premium",
+        "status": "active"
+      },
+      {
+        "feature_id": "premium_transitions",
+        "feature_name": "Hiệu ứng chuyển cảnh premium",
+        "status": "active"
+      },
+      {
+        "feature_id": "premium_stickers",
+        "feature_name": "Sticker premium",
+        "status": "active"
+      },
+      {
+        "feature_id": "premium_fonts",
+        "feature_name": "Font premium",
+        "status": "active"
+      },
+      {
+        "feature_id": "premium_music",
+        "feature_name": "Nhạc premium",
+        "status": "active"
+      },
+      {
+        "feature_id": "cloud_storage",
+        "feature_name": "Lưu trữ đám mây",
+        "status": "active"
+      }
+    ];
+    
+    // Add all premium privileges to account
+    obj.data.vip_privileges = premiumFeatures;
+    
+    // Add VIP plan info
+    obj.data.vip_plan = {
+      "plan_id": "premium_yearly",
+      "plan_name": "Premium Yearly",
+      "start_time": 1714019500, // Current time
+      "expire_time": 4102415999, // 31/12/2099
+      "renew_status": true,
+      "auto_renew_enabled": true
+    };
+    
+    // Set video export status
+    if (obj.data.export_status) {
+      obj.data.export_status.allow_high_quality = true;
+      obj.data.export_status.allow_4k = true;
+      obj.data.export_status.allow_no_watermark = true;
+      obj.data.export_status.allow_60fps = true;
+    } else {
+      obj.data.export_status = {
+        "allow_high_quality": true,
+        "allow_4k": true,
+        "allow_no_watermark": true,
+        "allow_60fps": true
+      };
+    }
+  }
+
+  $done({body: JSON.stringify(obj)});
+}
+dhungx_capcutPro();
+
+# capcut-subscription.js
+function dhungx_capcutSubscription() {
+  var body = $response.body;
+  var obj = JSON.parse(body);
+
+  if (obj.data) {
+    obj.data.status = "valid";
+    obj.data.subscription_type = "premium";
+    obj.data.expire_time = 4102415999; // 31/12/2099
+    obj.data.start_time = 1714019500; // Current time
+    obj.data.product_id = "com.lemon.lvoverseas.premium.yearly";
+    
+    // Set subscription info
+    obj.data.subscription = {
+      "status": "ACTIVE",
+      "product_id": "com.lemon.lvoverseas.premium.yearly",
+      "billing_period": "yearly",
+      "is_trial": false,
+      "auto_renew": true,
+      "purchase_time": 1714019500, // Current time
+      "expire_time": 4102415999, // 31/12/2099
+      "platform": "ios"
+    };
+    
+    // Set available features
+    obj.data.features = {
+      "allow_no_watermark": true,
+      "allow_high_quality": true,
+      "allow_4k": true,
+      "allow_60fps": true,
+      "allow_premium_templates": true,
+      "allow_premium_effects": true,
+      "allow_premium_filters": true,
+      "allow_premium_transitions": true,
+      "allow_premium_stickers": true,
+      "allow_premium_fonts": true,
+      "allow_premium_music": true,
+      "allow_cloud_storage": true
+    };
+    
+    // Set payment info
+    obj.data.payment_info = {
+      "payment_channel": "apple",
+      "payment_status": "success",
+      "transaction_id": "1000000XXXXXX",
+      "receipt_data": "valid_receipt_data"
+    };
+  }
+
+  $done({body: JSON.stringify(obj)});
+}
+dhungx_capcutSubscription();
+
+# capcut-resource.js
+function dhungx_capcutResource() {
+  var body = $response.body;
+  var obj = JSON.parse(body);
+
+  // Check if response contains items list (templates, fonts, stickers, etc)
+  if (obj.data && obj.data.items) {
+    // Loop through items and unlock any premium ones
+    obj.data.items.forEach(item => {
+      if (item.vip_status) {
+        item.vip_status = 0; // Set to free
+      }
+      if (item.status) {
+        item.status = "free"; // Set status to free
+      }
+      if (item.price) {
+        item.price = 0; // Set price to 0
+      }
+      // Mark as purchased if applicable
+      if (item.purchase_status !== undefined) {
+        item.purchase_status = 1; // Purchased
+      }
+      // Unlock if item has template_type
+      if (item.template_type) {
+        item.template_type = "free";
+      }
+    });
+  }
+
+  // For resource categories
+  if (obj.data && obj.data.categories) {
+    obj.data.categories.forEach(category => {
+      if (category.vip_status) {
+        category.vip_status = 0;
+      }
+      if (category.status) {
+        category.status = "free";
+      }
+    });
+  }
+
+  $done({body: JSON.stringify(obj)});
+}
+dhungx_capcutResource();
+
+# capcut-export.js
+function dhungx_capcutExport() {
+  var body = $response.body;
+  var obj = JSON.parse(body);
+
+  // Handle export settings
+  if (obj.data) {
+    // Unlock export options
+    if (obj.data.watermark_option) {
+      obj.data.watermark_option.allow_no_watermark = true;
+    }
+    
+    if (obj.data.resolution_option) {
+      // Unlock all resolutions
+      if (obj.data.resolution_option.resolutions) {
+        obj.data.resolution_option.resolutions.forEach(resolution => {
+          resolution.enabled = true;
+          resolution.premium = false;
+        });
+      }
+      
+      // Enable 4K
+      obj.data.resolution_option.allow_4k = true;
+      obj.data.resolution_option.allow_2k = true;
+    }
+    
+    // Unlock frame rate options
+    if (obj.data.framerate_option) {
+      if (obj.data.framerate_option.framerates) {
+        obj.data.framerate_option.framerates.forEach(framerate => {
+          framerate.enabled = true;
+          framerate.premium = false;
+        });
+      }
+      obj.data.framerate_option.allow_60fps = true;
+    }
+    
+    // Set export status to premium
+    if (obj.data.export_status) {
+      obj.data.export_status = "premium";
+    }
+  }
+
+  $done({body: JSON.stringify(obj)});
+}
+dhungx_capcutExport();
